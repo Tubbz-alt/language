@@ -1,36 +1,58 @@
 package lexis
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/enabokov/language/bnf"
 )
 
-type token struct {
-	class string
-	value string
+type Token struct {
+	Class string
+	Value string
 }
 
 func getLexemes(sourceCode string) (lexemes []string) {
 	return strings.Fields(sourceCode)
 }
 
-func getTokens(lexemes []string, bnfConfig bnf.BNF) []token {
-	var tokens []token
+func getTokens(lexemes []string, bnfConfig bnf.BNF) []Token {
+	var tokens []Token
 	for _, lexeme := range lexemes {
 		if checkValueInArray(lexeme, bnfConfig.Keywords) {
-			fmt.Println("Keyword:", lexeme)
+			tokens = append(tokens, Token{
+				Class: `keyword`,
+				Value: lexeme,
+			})
 		} else if checkValueInArray(lexeme, bnfConfig.PossibleType) {
-			fmt.Println("Type:", lexeme)
+			tokens = append(tokens, Token{
+				Class: `type`,
+				Value: lexeme,
+			})
 		} else if checkValueInArray(lexeme, bnfConfig.Punctuation) {
-			fmt.Println("Punctuation:", lexeme)
+			tokens = append(tokens, Token{
+				Class: `punctuation`,
+				Value: lexeme,
+			})
 		} else if checkValueIsString(lexeme) {
-			fmt.Println("String:", lexeme)
+			tokens = append(tokens, Token{
+				Class: `string`,
+				Value: lexeme,
+			})
 		} else if checkValueIsNumber(lexeme) {
-			fmt.Println("Number:", lexeme)
+			tokens = append(tokens, Token{
+				Class: `number`,
+				Value: lexeme,
+			})
+		} else if checkValueIsVariable(lexeme) {
+			tokens = append(tokens, Token{
+				Class: `variable`,
+				Value: lexeme,
+			})
 		} else {
-			fmt.Println("Unknown:", lexeme)
+			tokens = append(tokens, Token{
+				Class: `function`,
+				Value: lexeme,
+			})
 		}
 	}
 
