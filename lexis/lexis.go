@@ -3,10 +3,15 @@ package lexis
 import (
 	"io/ioutil"
 	"log"
-	"os"
 
 	"github.com/enabokov/language/bnf"
 )
+
+var bnfConfig bnf.BNF
+
+func init() {
+	bnfConfig = bnf.Read()
+}
 
 func readFile(filename string) string {
 	file, err := ioutil.ReadFile(filename)
@@ -17,9 +22,7 @@ func readFile(filename string) string {
 	return string(file)
 }
 
-func Analyze(filename string) []token {
-	bnfConfig := bnf.Read()
-
+func Analyze(filename string) []Token {
 	sourceCode := readFile(filename)
 	lexemes := getLexemes(sourceCode)
 	tokens := getTokens(lexemes, bnfConfig)
