@@ -5,10 +5,12 @@ import (
 	"os"
 
 	"github.com/enabokov/language/lexis"
+	"github.com/enabokov/language/syntax"
 )
 
 func main() {
 	filename := os.Args[1]
-	lexemes := lexis.Analyze(filename)
-	fmt.Println(lexemes)
+	tokens := lexis.Analyze(filename)
+	ok := syntax.Analyze(tokens)
+	fmt.Println(ok)
 }
