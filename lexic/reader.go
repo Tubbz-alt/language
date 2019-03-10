@@ -38,7 +38,7 @@ func (config *BNF) fill() {
 	}
 }
 
-func read() (config BNF) {
+func readBNF() (config BNF) {
 	config.fill()
 	return config
 }
