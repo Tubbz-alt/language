@@ -1,4 +1,4 @@
-bnfElements:
+basics:
   alter: "|"
   group: "()"
   option: "[]" # (0 or 1 time)
@@ -43,7 +43,7 @@ arrayLiterals:
   - type: 'possibleType [ length ]'
     length: 'expression'
 
-structType:
+structTypes:
   alternatives:
   - type: 'struct { { fieldDecl ; } }'
     fieldDecl: '(identifierList possibleType | embeddedField) [ tag ]'
