@@ -1,4 +1,4 @@
-package main
+package bnf
 
 import (
 	"io/ioutil"
