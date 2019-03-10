@@ -1,0 +1,67 @@
+bnfElements:
+  - class: alternation
+    value: "|"
+  - class: grouping
+    value: "()"
+  - class: option
+    value: "[]" # (0 or 1 time)
+  - class: repetition
+    value: "{}" # (0 -> n times)
+
+production: 'productionName "=" [ expression ] "." .'
+expression: 'alternative { "|" alternative } .'
+alternative: 'term { term } .'
+term: 'productionName | token [ "…" token ] | group | option | repetition .'
+group: '"(" expression ")" .'
+option: '"[" expression "]" .'
+repetition: '"{" expression "}" .'
+
+# newline: 'the Unicode code point U+000A .'
+# unicodeChar: 'an arbitrary Unicode code point except newline .'
+# unicodeLetter: 'a Unicode code point classified as "Letter" .'
+# unicodeDigit: 'a Unicode code point classified as "Number, decimal digit" .'
+
+letter: 'unicodeLetter | "_" .'
+decimalDigit: '[0-9] .'
+octalDigit: '[0-7] .'
+hexDigit: '[0-9] | [A-F] | [a-f] .'
+
+variableIdentifier: 'letter { letter | unicodeDigit } .'
+
+keywords: ['break', 'case', 'defer', 'go', 'map', 'struct', 'chan', 'else', 'package', 'switch', 'const', 'if', 'range', 'type', 'continue', 'for', 'import', 'return', 'var']
+punctuation: ['+', '&', '+=', '&=', '&&', '==', '!=', '(', ')', '-', '|', '-=', '|=', '||', '<', '<=', '[', ']', '*', '^', '*=', '^=', '<-', '>', '>=', '{', '}', '/', '<<', '/=', '<<=', '++', '=', ':=', ',', ';', '%', '>>', '%=', '--', '!', '...', '.', ':']
+
+integerLiterals:
+  - intLit: decimalLit | octalLit | hexLit .
+  - decimalLit: '( [1-9] ) { decimalDigit } .'
+  - octalLit: '"0" { octalDigit } .'
+  - hexLit: '"0" ( "x" | "X" ) hexDigit { hexDigit } .'
+
+floatLiterals:
+  - floatLit: 'decimals "." [ decimals ] [ exponent ] | "." decimals [ exponent ] .'
+  - decimals: 'decimalDigit { decimalDigit } .'
+  - exponent: '( "e" | "E" ) [ "+" | "-" ] decimals .'
+
+stringLiterals:
+  - stringLit: 'rawStringLit | interpretedStringLit .'
+  # - raw_string_lit: '"'" { unicode_char | newline } "'" .'
+  - interpretedStringLit: '`"` { unicodeValue | byteValue } `"` .'
+
+arrayLiterals:
+  - arrayType: 'elementType "[" arrayLength "]" .'
+  - arrayLength: 'expression .'
+  - elementType: 'Type .'
+
+structTypes:
+  - structType: '"struct" "{" { fieldDecl ";" } "}" .'
+  - fieldDecl: '(identifierList Type | embeddedField) [ Tag ] .'
+  - embeddedField: '[ "*" ] typeName .'
+  - tag: 'stringLit .'
+
+functionTypes:
+  - functionType: 'def signature .'
+  - signature: 'parameters [ result ] .'
+  - result: 'parameters Type .'
+  - parameters: '"(" [ parameterList [ "," ] ] ")" .'
+  - parameterList: 'parameterDecl { "," parameterDecl } .'
+  - parameterDecl: '[ identifierList ] [ "..." ] Type .'
