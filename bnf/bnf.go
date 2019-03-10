@@ -3,6 +3,7 @@ package bnf
 import (
 	"io/ioutil"
 	"log"
+	"os"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -27,8 +28,8 @@ type BNF struct {
 	FunctionType       Alternatives      `yaml:"functionTypes"`
 }
 
-func (config *BNF) fill() {
-	file, err := ioutil.ReadFile("bnf.yml")
+func (config *BNF) fill(filename string) {
+	file, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatalln("Failed to read bnf.yml file")
 	}
@@ -39,6 +40,6 @@ func (config *BNF) fill() {
 }
 
 func Read() (config BNF) {
-	config.fill()
+	config.fill(os.Getenv("BNF_FILE_PATH"))
 	return config
 }
