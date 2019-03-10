@@ -11,12 +11,12 @@ definitions:
   unicodeDigit: 'a Unicode code point classified as "Number, decimal digit" .'
 
 primitives:
-  letter: 'unicodeLetter | "_"'
+  letter: '[a-f] | [A-F] | _'
   decimalDigit: '[0-9]'
   octalDigit: '[0-7]'
   hexDigit: '[0-9] | [A-F] | [a-f]'
 
-variableIdentifier: 'letter { letter | unicodeDigit }'
+variableIdentifier: 'letter { letter | decimalDigit }'
 possibleType: ['string', 'int', 'long', 'double', 'float']
 keywords: ['break', 'case', 'defer', 'go', 'map', 'struct', 'chan', 'else', 'package', 'switch', 'const', 'if', 'range', 'type', 'continue', 'for', 'import', 'return', 'var']
 punctuation: ['+', '&', '+=', '&=', '&&', '==', '!=', '(', ')', '-', '|', '-=', '|=', '||', '<', '<=', '[', ']', '*', '^', '*=', '^=', '<-', '>', '>=', '{', '}', '/', '<<', '/=', '<<=', '++', '=', ':=', ',', ';', '%', '>>', '%=', '--', '!', '...', '.', ':']
