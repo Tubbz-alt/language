@@ -1,11 +1,25 @@
 package lexis
 
-import "log"
+import (
+	"fmt"
+	"log"
+)
 
 type Token struct {
 	Class string
 	Value string
 }
+
+const (
+	classVariable    = "variable"
+	classFunction    = "function"
+	classKeyword     = "keyword"
+	classCall        = "call"
+	classString      = "string"
+	classPunctuation = "punctuation"
+	classOperator    = "operator"
+	classNumber      = "number"
+)
 
 func readWhile(input stream, predicate func(lexeme string) bool) (lexeme string) {
 	for !input.eof() && predicate(input.peek()) {
@@ -32,7 +46,7 @@ func readNumber(input stream) *Token {
 	)
 
 	return &Token{
-		Class: "num",
+		Class: classNumber,
 		Value: number,
 	}
 }
@@ -40,9 +54,9 @@ func readNumber(input stream) *Token {
 func readIdentifier(input stream, keywords []string) *Token {
 	id := readWhile(input, isIdentifier)
 
-	var class = "var"
+	var class = classVariable
 	if isKeyword(keywords, id) {
-		class = "kw"
+		class = classKeyword
 	}
 
 	return &Token{
@@ -55,7 +69,7 @@ func readCaller(input stream) *Token {
 	caller := readWhile(input, isCall)
 
 	return &Token{
-		Class: "call",
+		Class: classCall,
 		Value: caller,
 	}
 }
@@ -86,7 +100,7 @@ func readEscaped(input stream, end string) string {
 
 func readString(input stream) *Token {
 	return &Token{
-		Class: "str",
+		Class: classString,
 		Value: readEscaped(input, `"`),
 	}
 }
@@ -132,18 +146,18 @@ func readNext(input stream, keywords []string) (token *Token) {
 
 		if isPunctuation(ch) {
 			return &Token{
-				Class: "punc",
+				Class: classPunctuation,
 				Value: input.next(),
 			}
 		}
 
 		if isOperator(ch) {
 			return &Token{
-				Class: "op",
+				Class: classOperator,
 				Value: readWhile(input, isOperator),
 			}
 		}
 
-		log.Fatalf("Can't handle character: %s", ch)
+		log.Fatalln(input.croak(fmt.Sprintf("Can't handle: '%s'", ch)))
 	}
 }

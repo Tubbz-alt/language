@@ -44,7 +44,7 @@ func readInputStream(input []string) stream {
 	}
 
 	croak := func(msg string) error {
-		return fmt.Errorf("%s (%d : %d)", msg, line, col)
+		return fmt.Errorf("(Line: %d, Column: %d) %s", line+1, col+1, msg)
 	}
 
 	return stream{next, peek, eof, croak}
@@ -59,7 +59,7 @@ type tokenStream struct {
 
 func readTokenStream(input stream) tokenStream {
 	var current *Token
-	var keywords = []string{"if", "else", "def", "string", "true", "false"}
+	keywords := bnfConfig.Keywords
 
 	next := func() (token *Token) {
 		token = current
