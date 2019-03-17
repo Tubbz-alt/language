@@ -1,14 +1,13 @@
 package lexis
 
 import (
+	"regexp"
 	"strconv"
-	"strings"
-	"unicode"
 )
 
-func checkValueInArray(value string, array []string) bool {
-	for _, element := range array {
-		if element == value {
+func isKeyword(keywords []string, lexeme string) bool {
+	for _, key := range keywords {
+		if key == lexeme {
 			return true
 		}
 	}
@@ -16,48 +15,31 @@ func checkValueInArray(value string, array []string) bool {
 	return false
 }
 
-func checkValueIsString(value string) bool {
-	if strings.Contains(value, "\"") {
-		return true
-	}
-
-	return false
-}
-
-func checkValueIsNumber(value string) bool {
-	if checkValueIsString(value) {
-		return false
-	}
-
-	if _, err := strconv.Atoi(string(value)); err != nil {
+func isDigit(lexeme string) bool {
+	_, err := strconv.Atoi(lexeme)
+	if err != nil {
 		return false
 	}
 
 	return true
 }
 
-func checkValueIsLetter(value string) bool {
-	for _, r := range value {
-		if !unicode.IsLetter(r) {
-			return false
-		}
-	}
-
-	return true
+func isIdentifierStart(lexeme string) bool {
+	return regexp.MustCompile(`[a-zA-Z_]`).MatchString(lexeme)
 }
 
-func checkValueIsVariable(value string) bool {
-	if checkValueIsString(value) {
-		return false
-	}
+func isIdentifier(lexeme string) bool {
+	return isIdentifierStart(lexeme) || regexp.MustCompile(`[0-9-]`).MatchString(lexeme)
+}
 
-	if _, err := strconv.Atoi(string(value)); err == nil {
-		return false
-	}
+func isOperator(lexeme string) bool {
+	return regexp.MustCompile(`[\+\-\*\/%=&|<>!]`).MatchString(lexeme)
+}
 
-	if !checkValueIsLetter(value) {
-		return false
-	}
+func isPunctuation(lexeme string) bool {
+	return regexp.MustCompile(`[,;\(\){}\[\]]`).MatchString(lexeme)
+}
 
-	return true
+func isWhitespace(lexeme string) bool {
+	return regexp.MustCompile(`[[:space:]]`).MatchString(lexeme)
 }
