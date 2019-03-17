@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/enabokov/language/bnf"
 )

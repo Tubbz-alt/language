@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-// Hello world
+# Hello world
 def nameFunction(a string, b int) (asd string) {
 	defer bla.Close()
 	a := 5 * 4

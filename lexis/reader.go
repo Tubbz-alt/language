@@ -128,12 +128,12 @@ func readNext(input stream) (token *Token) {
 		}
 
 		ch := input.peek()
-
-		switch ch {
-		case `#`:
+		if ch == `#` {
 			skipComment(input)
 			continue
-		case `"`:
+		}
+
+		if ch == `"` {
 			return readString(input)
 		}
 
