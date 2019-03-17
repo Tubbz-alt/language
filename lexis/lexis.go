@@ -26,13 +26,13 @@ func Analyze(filename string) []Token {
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+		lines = append(lines, scanner.Text()+"\n")
 	}
 
 	stream := readInputStream(lines)
 	tokens := readTokenStream(stream)
 
-	for i := 0; i < 4; i++ {
+	for i := 0; i < 500; i++ {
 		token := tokens.next()
 		if token != nil {
 			fmt.Println(*token)
