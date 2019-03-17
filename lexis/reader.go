@@ -11,7 +11,7 @@ func readWhile(input stream, predicate func(lexeme string) bool) (lexeme string)
 	for !input.eof() && predicate(input.peek()) {
 		lexeme += input.next()
 	}
-	fmt.Println("LEXEME", lexeme)
+
 	return lexeme
 }
 
@@ -100,7 +100,6 @@ func readNext(input stream, keywords []string) (token *Token) {
 		}
 
 		ch := input.peek()
-		fmt.Println(ch)
 
 		switch ch {
 		case `#`:

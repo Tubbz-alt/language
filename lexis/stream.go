@@ -28,12 +28,11 @@ func readInputStream(input []string) stream {
 			col = 0
 		}
 
-		fmt.Println(ch)
 		return ch
 	}
 
 	peek := func() (ch string) {
-		if line < len(input) && col < len(input) {
+		if line < len(input) && col < len(input[line]) {
 			ch = string(input[line][col])
 		}
 
@@ -41,7 +40,7 @@ func readInputStream(input []string) stream {
 	}
 
 	eof := func() bool {
-		return peek() == " "
+		return peek() == ""
 	}
 
 	croak := func(msg string) error {

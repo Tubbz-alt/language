@@ -1,7 +1,8 @@
 package lexis
 
 import (
-	"io/ioutil"
+	"bufio"
+	"fmt"
 	"log"
 
 	"github.com/enabokov/language/bnf"
@@ -13,18 +14,30 @@ func init() {
 	bnfConfig = bnf.Read()
 }
 
-func readFile(filename string) string {
-	file, err := ioutil.ReadFile(filename)
+func Analyze(filename string) []Token {
+	file, err := os.Open(filename)
+	defer file.Close()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	return string(file)
-}
+	var lines []string
 
-func Analyze(filename string) []Token {
-	sourceCode := readFile(filename)
-	lexemes := getLexemes(sourceCode)
-	tokens := getTokens(lexemes, bnfConfig)
-	return tokens
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	stream := readInputStream(lines)
+	tokens := readTokenStream(stream)
+
+	for i := 0; i < 4; i++ {
+		token := tokens.next()
+		if token != nil {
+			fmt.Println(*token)
+		}
+	}
+
+	return nil
 }

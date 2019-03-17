@@ -16,8 +16,7 @@ func isKeyword(keywords []string, lexeme string) bool {
 }
 
 func isDigit(lexeme string) bool {
-	_, err := strconv.Atoi(lexeme)
-	if err != nil {
+	if _, err := strconv.Atoi(lexeme); err != nil {
 		return false
 	}
 
