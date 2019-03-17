@@ -19,6 +19,7 @@ const (
 	classPunctuation = "punctuation"
 	classOperator    = "operator"
 	classNumber      = "number"
+	classType        = "type"
 )
 
 func readWhile(input stream, predicate func(lexeme string) bool) (lexeme string) {
@@ -51,12 +52,16 @@ func readNumber(input stream) *Token {
 	}
 }
 
-func readIdentifier(input stream, keywords []string) *Token {
+func readIdentifier(input stream) *Token {
 	id := readWhile(input, isIdentifier)
 
 	var class = classVariable
-	if isKeyword(keywords, id) {
+	if isKeyword(id) {
 		class = classKeyword
+	}
+
+	if isType(id) {
+		class = classType
 	}
 
 	return &Token{
@@ -115,7 +120,7 @@ func skipComment(input stream) {
 	input.next()
 }
 
-func readNext(input stream, keywords []string) (token *Token) {
+func readNext(input stream) (token *Token) {
 	for {
 		readWhile(input, isWhitespace)
 		if input.eof() {
@@ -137,7 +142,7 @@ func readNext(input stream, keywords []string) (token *Token) {
 		}
 
 		if isIdentifierStart(ch) {
-			return readIdentifier(input, keywords)
+			return readIdentifier(input)
 		}
 
 		if isCall(ch) {

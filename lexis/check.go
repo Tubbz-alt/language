@@ -5,8 +5,18 @@ import (
 	"strconv"
 )
 
-func isKeyword(keywords []string, lexeme string) bool {
-	for _, key := range keywords {
+func isKeyword(lexeme string) bool {
+	for _, key := range bnfConfig.Keywords {
+		if key == lexeme {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isType(lexeme string) bool {
+	for _, key := range bnfConfig.Types {
 		if key == lexeme {
 			return true
 		}
@@ -32,11 +42,23 @@ func isIdentifier(lexeme string) bool {
 }
 
 func isOperator(lexeme string) bool {
-	return regexp.MustCompile(`[\+\-\*\/%=:&|<>!]`).MatchString(lexeme)
+	for _, operator := range bnfConfig.Operators {
+		if operator == lexeme {
+			return true
+		}
+	}
+
+	return false
 }
 
 func isPunctuation(lexeme string) bool {
-	return regexp.MustCompile(`[,;\(\){}\[\]]`).MatchString(lexeme)
+	for _, key := range bnfConfig.Punctuation {
+		if key == lexeme {
+			return true
+		}
+	}
+
+	return false
 }
 
 func isWhitespace(lexeme string) bool {

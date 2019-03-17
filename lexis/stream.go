@@ -59,14 +59,13 @@ type tokenStream struct {
 
 func readTokenStream(input stream) tokenStream {
 	var current *Token
-	keywords := bnfConfig.Keywords
 
 	next := func() (token *Token) {
 		token = current
 		current = nil
 
 		if token == nil {
-			return readNext(input, keywords)
+			return readNext(input)
 		}
 
 		return token
@@ -74,7 +73,7 @@ func readTokenStream(input stream) tokenStream {
 
 	peek := func() *Token {
 		if current == nil {
-			current = readNext(input, keywords)
+			current = readNext(input)
 		}
 
 		return current
