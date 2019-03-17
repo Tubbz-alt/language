@@ -21,6 +21,7 @@ type BNF struct {
 	Keywords           []string          `yaml:"keywords"`
 	Operators          []string          `yaml:"operators"`
 	Punctuation        []string          `yaml:"punctuation"`
+	Comments           string            `yaml:"comments"`
 	IntegerLiterals    Alternatives      `yaml:"integerLiterals"`
 	FloatLiterals      Alternatives      `yaml:"floatLiterals"`
 	StringLiterals     Alternatives      `yaml:"stringLiterals"`

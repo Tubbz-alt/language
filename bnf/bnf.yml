@@ -19,8 +19,9 @@ primitives:
 variableIdentifier: 'letter { letter | decimalDigit }'
 types: ['string', 'int', 'long', 'double', 'float']
 keywords: ['func', 'break', 'case', 'defer', 'go', 'map', 'struct', 'chan', 'else', 'package', 'switch', 'const', 'if', 'range', 'type', 'continue', 'for', 'import', 'return', 'var']
-operators: ['+', '&', '+=', '&=', '&&', '==', '!=', '-', '|', '-=', '|=', '||', '<', '<=',  '*', '^', '*=', '^=', '<-', '>', '>=', '/', '<<', '/=', '<<=', '++', '=', ':=', '%', '>>', '%=', '--', '!', ':']
+operators: ['+', '&', '+=', '&=', '&&', '==', '!=', '-', '|', '-=', '|=', '||', '<', '<=',  '*', '^', '*=', '^=', '<-', '>', '>=', '/', '<<', '/=', '<<=', '++', '=',  '%', '>>', '%=', '--', '!', ':']
 punctuation: ['(', ')', '[', ']', '{', '}', ',', ';', '...', '.']
+comments: '//'
 
 integerLiterals:
   alternatives:
