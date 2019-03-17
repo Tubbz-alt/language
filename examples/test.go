@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-def nameFunction() {
+def nameFunction(a string, b int) (asd string) {
 	defer bla.Close()
 	a := 5 * 4
 	fmt.Println(a)
@@ -10,5 +10,5 @@ def nameFunction() {
 	b := 12*23 + 1234 - (12 * 23)
 	fmt.Println(b)
 
-	c := "123"
+	c := 123.123
 }
