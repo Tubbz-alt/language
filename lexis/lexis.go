@@ -14,7 +14,7 @@ func init() {
 	bnfConfig = bnf.Read()
 }
 
-func Analyze(filename string) []Token {
+func readLines(filename string) []string {
 	file, err := os.Open(filename)
 	defer file.Close()
 	if err != nil {
@@ -29,6 +29,11 @@ func Analyze(filename string) []Token {
 		lines = append(lines, scanner.Text()+"\n")
 	}
 
+	return lines
+}
+
+func Analyze(filename string) []Token {
+	lines := readLines(filename)
 	stream := readInputStream(lines)
 	tokens := readTokenStream(stream)
 
