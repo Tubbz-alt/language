@@ -1,6 +1,6 @@
 package lexis
 
-import "fmt"
+import "log"
 
 type Token struct {
 	Class string
@@ -48,6 +48,15 @@ func readIdentifier(input stream, keywords []string) *Token {
 	return &Token{
 		Class: class,
 		Value: id,
+	}
+}
+
+func readCaller(input stream) *Token {
+	caller := readWhile(input, isCall)
+
+	return &Token{
+		Class: "call",
+		Value: caller,
 	}
 }
 
@@ -117,6 +126,10 @@ func readNext(input stream, keywords []string) (token *Token) {
 			return readIdentifier(input, keywords)
 		}
 
+		if isCall(ch) {
+			return readCaller(input)
+		}
+
 		if isPunctuation(ch) {
 			return &Token{
 				Class: "punc",
@@ -131,7 +144,6 @@ func readNext(input stream, keywords []string) (token *Token) {
 			}
 		}
 
-		input.croak(fmt.Sprintf("Can't handle character: %s", ch))
-		return nil
+		log.Fatalf("Can't handle character: %s", ch)
 	}
 }

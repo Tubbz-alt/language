@@ -32,7 +32,7 @@ func isIdentifier(lexeme string) bool {
 }
 
 func isOperator(lexeme string) bool {
-	return regexp.MustCompile(`[\+\-\*\/%=&|<>!]`).MatchString(lexeme)
+	return regexp.MustCompile(`[\+\-\*\/%=:&|<>!]`).MatchString(lexeme)
 }
 
 func isPunctuation(lexeme string) bool {
@@ -41,4 +41,8 @@ func isPunctuation(lexeme string) bool {
 
 func isWhitespace(lexeme string) bool {
 	return regexp.MustCompile(`[[:space:]]`).MatchString(lexeme)
+}
+
+func isCall(lexeme string) bool {
+	return regexp.MustCompile(`[a-zA-Z_0-9.]`).MatchString(lexeme)
 }
