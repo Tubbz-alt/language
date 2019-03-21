@@ -2,7 +2,6 @@ package lexis
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"os"
 
@@ -33,17 +32,17 @@ func readLines(filename string) []string {
 	return lines
 }
 
-func Analyze(filename string) []Token {
+func Analyze(filename string) TokenStream {
 	lines := readLines(filename)
 	stream := readInputStream(lines)
-	tokens := readTokenStream(stream)
+	return readTokenStream(stream)
 
-	for i := 0; i < 500; i++ {
-		token := tokens.Next()
-		if token != nil {
-			fmt.Println(*token)
-		}
-	}
+	// for i := 0; i < 500; i++ {
+	// 	token := tokens.Next()
+	// 	if token != nil {
+	// 		fmt.Println(*token)
+	// 	}
+	// }
 
-	return nil
+	// return nil
 }

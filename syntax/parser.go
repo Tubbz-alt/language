@@ -3,6 +3,7 @@ package syntax
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/enabokov/language/lexis"
 )
@@ -22,6 +23,8 @@ type bigToken struct {
 
 func maybeBinary(input lexis.TokenStream, left *bigToken, prec int) *bigToken {
 	token := IsOperator(input, "")
+	fmt.Println(`SDASDAS`, token)
+	fmt.Println(input.Peek())
 	if token != nil {
 		currentPrec := Precedence[token.Value]
 		if currentPrec > prec {
@@ -33,7 +36,7 @@ func maybeBinary(input lexis.TokenStream, left *bigToken, prec int) *bigToken {
 			}
 
 			parsed := parseAtom(input)
-
+			fmt.Println("==============Patsed:", parsed)
 			right := maybeBinary(input, parsed, currentPrec)
 			return maybeBinary(
 				input,
@@ -89,7 +92,7 @@ func parseCall(input lexis.TokenStream, token *lexis.Token) *bigToken {
 func parseVarname(input lexis.TokenStream) {
 	name := input.Next()
 	if name.Class != lexis.ClassVariable {
-		input.Croak(fmt.Sprintf("Expecting variable name, but not %s", name))
+		log.Fatalln(input.Croak(fmt.Sprintf("Expecting variable name, but not %s", name)))
 	}
 }
 
@@ -104,8 +107,17 @@ func maybeCall(input lexis.TokenStream, token *lexis.Token) *bigToken {
 func parseExpression(input lexis.TokenStream) *bigToken {
 	parsed := parseAtom(input)
 	token := maybeBinary(input, parsed, 0)
+	fmt.Println(token)
 
-	return maybeCall(input, &lexis.Token{Class: token.class, Value: token.operator})
+	var class string
+	var value string
+
+	if token != nil {
+		class = token.class
+		value = token.operator
+	}
+
+	return maybeCall(input, &lexis.Token{Class: class, Value: value})
 }
 
 func parseBool(input lexis.TokenStream) *bigToken {
@@ -127,7 +139,7 @@ func parseIf(input lexis.TokenStream) *bigToken {
 	var ret *bigToken
 	if IsKeyword(input, "else") != nil {
 		input.Next()
-		ret := &bigToken{
+		ret = &bigToken{
 			class: "if",
 			cond:  cond.value,
 			_else: parseExpression(input).value,
@@ -135,6 +147,15 @@ func parseIf(input lexis.TokenStream) *bigToken {
 	}
 
 	return ret
+}
+
+func parseDefer(input lexis.TokenStream) *bigToken {
+	SkipKeyword(input, "defer")
+	variable := parseExpression(input)
+	return &bigToken{
+		class: "defer",
+		value: variable.value,
+	}
 }
 
 func parseAtom(input lexis.TokenStream) *bigToken {
@@ -155,6 +176,10 @@ func parseAtom(input lexis.TokenStream) *bigToken {
 
 	if IsKeyword(input, "true") != nil || IsKeyword(input, "false") != nil {
 		return parseBool(input)
+	}
+
+	if IsKeyword(input, "defer") != nil {
+		return parseDefer(input)
 	}
 
 	// if IsKeyword(input, "lambda") != nil {
@@ -190,12 +215,13 @@ func parseProgram(input lexis.TokenStream) *bigToken {
 	return nil
 }
 
-func parseTopLevel(input lexis.TokenStream) *bigToken {
+func ParseTopLevel(input lexis.TokenStream) *bigToken {
 	var prog []*bigToken
 	for !input.Eof() {
 		prog = append(prog, parseExpression(input))
 		if !input.Eof() {
-			SkipPunctuation(input, ";")
+			fmt.Println("Next line, ", prog)
+			// SkipPunctuation(input, ";")
 		}
 	}
 

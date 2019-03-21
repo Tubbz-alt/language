@@ -2,6 +2,7 @@ package syntax
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/enabokov/language/lexis"
 )
@@ -18,6 +19,10 @@ var Precedence = map[string]int{
 func IsPunctuation(input lexis.TokenStream, lexeme string) *lexis.Token {
 	token := input.Peek()
 
+	if token == nil {
+		return nil
+	}
+
 	if token.Class != lexis.ClassPunctuation {
 		return nil
 	}
@@ -32,6 +37,10 @@ func IsPunctuation(input lexis.TokenStream, lexeme string) *lexis.Token {
 func IsKeyword(input lexis.TokenStream, lexeme string) *lexis.Token {
 	token := input.Peek()
 
+	if token == nil {
+		return nil
+	}
+
 	if token.Class != lexis.ClassKeyword {
 		return nil
 	}
@@ -45,6 +54,9 @@ func IsKeyword(input lexis.TokenStream, lexeme string) *lexis.Token {
 
 func IsOperator(input lexis.TokenStream, lexeme string) *lexis.Token {
 	token := input.Peek()
+	if token == nil {
+		return nil
+	}
 
 	if token.Class != lexis.ClassOperator {
 		return nil
@@ -61,7 +73,7 @@ func SkipPunctuation(input lexis.TokenStream, lexeme string) {
 	if IsPunctuation(input, lexeme) != nil {
 		input.Next()
 	} else {
-		input.Croak(fmt.Sprintf("Expecting punctuation: %s", lexeme))
+		log.Fatalln(input.Croak(fmt.Sprintf("Expecting punctuation: %s", lexeme)))
 	}
 }
 
@@ -69,7 +81,7 @@ func SkipKeyword(input lexis.TokenStream, lexeme string) {
 	if IsKeyword(input, lexeme) != nil {
 		input.Next()
 	} else {
-		input.Croak(fmt.Sprintf("Expecting keyword: %s", lexeme))
+		log.Fatalln(input.Croak(fmt.Sprintf("Expecting keyword: %s", lexeme)))
 	}
 }
 
@@ -77,10 +89,10 @@ func SkipOperator(input lexis.TokenStream, lexeme string) {
 	if IsOperator(input, lexeme) != nil {
 		input.Next()
 	} else {
-		input.Croak(fmt.Sprintf("Expecting operator: %s", lexeme))
+		log.Fatalln(input.Croak(fmt.Sprintf("Expecting operator: %s", lexeme)))
 	}
 }
 
 func Unexpected(input lexis.TokenStream) {
-	input.Croak(fmt.Sprintf("Unexpected token: %s", input.Peek()))
+	log.Fatalln(input.Croak(fmt.Sprintf("Unexpected token: %s", input.Peek())))
 }
