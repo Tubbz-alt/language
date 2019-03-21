@@ -6,46 +6,81 @@ import (
 	"github.com/enabokov/language/lexis"
 )
 
-func checkPackageExpression(tokens []lexis.Token) ([]lexis.Token, error) {
-	var err error
-	var currentToken lexis.Token
-	var nextToken lexis.Token
-
-	currentToken, tokens = tokens[0], tokens[1:]
-	nextToken, tokens = tokens[0], tokens[1:]
-
-	if currentToken.Class == "keyword" && currentToken.Value == "package" {
-		if nextToken.Class == "variable" && nextToken.Value != "" {
-			return tokens, nil
-		}
-	}
-
-	err = fmt.Errorf(fmt.Sprintf("Failed to parse package expression: '%s %s'", currentToken.Value, nextToken.Value))
-	return tokens, err
+var Precedence = map[string]int{
+	"=":  1,
+	"||": 2,
+	"&&": 3,
+	"<":  7, ">": 7, "<=": 7, ">=": 7, "==": 7, "!=": 7,
+	"+": 10, "-": 10,
+	"*": 20, "/": 20, "%": 20,
 }
 
-func _importCheck(current lexis.Token, next lexis.Token) (bool, error) {
-	var err error
-	if current.Class == "keyword" && current.Value == "import" {
-		if next.Class == "string" && next.Value != "" {
-			return true, nil
-		}
+func IsPunctuation(input lexis.TokenStream, lexeme string) *lexis.Token {
+	token := input.Peek()
 
-		err = fmt.Errorf(fmt.Sprintf("Failed to parse import expression: '%s %s'. Add double qoutes", current.Value, next.Value))
+	if token.Class != lexis.ClassPunctuation {
+		return nil
 	}
 
-	return false, err
+	if lexeme == "" || token.Value != lexeme {
+		return nil
+	}
+
+	return token
 }
 
-func checkImportExpression(tokens []lexis.Token) ([]lexis.Token, error) {
-	var err error
+func IsKeyword(input lexis.TokenStream, lexeme string) *lexis.Token {
+	token := input.Peek()
 
-	i := 0
-	var ok bool
-	for ok = true; ok; ok, err = _importCheck(tokens[i], tokens[i+1]) {
-		tokens = tokens[2:]
-		i = 0
+	if token.Class != lexis.ClassKeyword {
+		return nil
 	}
 
-	return tokens, err
+	if lexeme == "" || token.Value != lexeme {
+		return nil
+	}
+
+	return token
+}
+
+func IsOperator(input lexis.TokenStream, lexeme string) *lexis.Token {
+	token := input.Peek()
+
+	if token.Class != lexis.ClassOperator {
+		return nil
+	}
+
+	if lexeme == "" || token.Value != lexeme {
+		return nil
+	}
+
+	return token
+}
+
+func SkipPunctuation(input lexis.TokenStream, lexeme string) {
+	if IsPunctuation(input, lexeme) != nil {
+		input.Next()
+	} else {
+		input.Croak(fmt.Sprintf("Expecting punctuation: %s", lexeme))
+	}
+}
+
+func SkipKeyword(input lexis.TokenStream, lexeme string) {
+	if IsKeyword(input, lexeme) != nil {
+		input.Next()
+	} else {
+		input.Croak(fmt.Sprintf("Expecting keyword: %s", lexeme))
+	}
+}
+
+func SkipOperator(input lexis.TokenStream, lexeme string) {
+	if IsOperator(input, lexeme) != nil {
+		input.Next()
+	} else {
+		input.Croak(fmt.Sprintf("Expecting operator: %s", lexeme))
+	}
+}
+
+func Unexpected(input lexis.TokenStream) {
+	input.Croak(fmt.Sprintf("Unexpected token: %s", input.Peek()))
 }

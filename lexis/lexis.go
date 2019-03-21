@@ -39,7 +39,7 @@ func Analyze(filename string) []Token {
 	tokens := readTokenStream(stream)
 
 	for i := 0; i < 500; i++ {
-		token := tokens.next()
+		token := tokens.Next()
 		if token != nil {
 			fmt.Println(*token)
 		}
