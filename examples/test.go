@@ -3,7 +3,7 @@
 #import "fmt"
 
 def nameFunction(a, b) {
-	defer bla.Close()
+	defer bla.Do(b, as)
 	a := 5 * 4
 	fmt.Println(a)
 

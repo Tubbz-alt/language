@@ -8,10 +8,10 @@ import (
 	"github.com/enabokov/language/bnf"
 )
 
-var bnfConfig bnf.BNF
+var BnfConfig bnf.BNF
 
 func init() {
-	bnfConfig = bnf.Read()
+	BnfConfig = bnf.Read()
 }
 
 func readLines(filename string) []string {

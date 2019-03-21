@@ -31,7 +31,7 @@ func maybeBinary(input lexis.TokenStream, left *bigToken, prec int) *bigToken {
 			input.Next()
 
 			class := "binary"
-			if token.Value == "=" {
+			if token.Value == "=" || token.Value == ":=" {
 				class = "assign"
 			}
 
@@ -74,7 +74,6 @@ func delimited(input lexis.TokenStream, start string, stop string, separator str
 		}
 
 		parsed := parser(input)
-
 		tokens = append(tokens, *parsed)
 	}
 	SkipPunctuation(input, stop)
@@ -89,10 +88,15 @@ func parseCall(input lexis.TokenStream, token *lexis.Token) *bigToken {
 	}
 }
 
-func parseVarname(input lexis.TokenStream) {
+func parseVarname(input lexis.TokenStream) *bigToken {
 	name := input.Next()
 	if name.Class != lexis.ClassVariable {
 		log.Fatalln(input.Croak(fmt.Sprintf("Expecting variable name, but not %s", name)))
+	}
+
+	return &bigToken{
+		class: "var",
+		value: name.Value,
 	}
 }
 
@@ -152,6 +156,11 @@ func parseIf(input lexis.TokenStream) *bigToken {
 func parseDefer(input lexis.TokenStream) *bigToken {
 	SkipKeyword(input, "defer")
 	variable := parseExpression(input)
+	input.Next()
+
+	delimited(input, "(", ")", ",", parseVarname)
+	parseExpression(input)
+
 	return &bigToken{
 		class: "defer",
 		value: variable.value,

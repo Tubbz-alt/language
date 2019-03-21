@@ -69,6 +69,23 @@ func IsOperator(input lexis.TokenStream, lexeme string) *lexis.Token {
 	return token
 }
 
+func IsType(input lexis.TokenStream, lexeme string) *lexis.Token {
+	token := input.Peek()
+	if token == nil {
+		return nil
+	}
+
+	if token.Class != lexis.ClassType {
+		return nil
+	}
+
+	if lexeme == "" || token.Value != lexeme {
+		return nil
+	}
+
+	return token
+}
+
 func SkipPunctuation(input lexis.TokenStream, lexeme string) {
 	if IsPunctuation(input, lexeme) != nil {
 		input.Next()
@@ -91,6 +108,21 @@ func SkipOperator(input lexis.TokenStream, lexeme string) {
 	} else {
 		log.Fatalln(input.Croak(fmt.Sprintf("Expecting operator: %s", lexeme)))
 	}
+}
+
+func SkipType(input lexis.TokenStream, types []string) {
+	var found = false
+	for _, _type := range types {
+		if IsOperator(input, _type) != nil {
+			found = true
+		}
+	}
+
+	if !found {
+		log.Fatalln(input.Croak(fmt.Sprintf("Expecting type any of %s", types)))
+	}
+
+	input.Next()
 }
 
 func Unexpected(input lexis.TokenStream) {
