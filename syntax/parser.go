@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/enabokov/language/lexis"
+	"github.com/kr/pretty"
 )
 
 func parseParams(input lexis.TokenStream, params *[]tokenVariable, requiredParam bool) error {
@@ -197,6 +198,7 @@ func parseBinaryExpression(input lexis.TokenStream, token *lexis.Token) (tokenBi
 
 	for {
 		token := input.Peek()
+
 		if token.Class == lexis.ClassOperator {
 			operators = append(operators, token.Value)
 			input.Next()
@@ -280,6 +282,6 @@ func program(input lexis.TokenStream) bool {
 		prog.Expression = append(prog.Expression, token)
 	}
 
-	fmt.Printf("%+v\n", prog.Expression)
+	fmt.Printf("%# v", pretty.Formatter(prog))
 	return true
 }
