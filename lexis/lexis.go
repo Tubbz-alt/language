@@ -36,13 +36,4 @@ func Analyze(filename string) TokenStream {
 	lines := readLines(filename)
 	stream := readInputStream(lines)
 	return readTokenStream(stream)
-
-	// for i := 0; i < 500; i++ {
-	// 	token := tokens.Next()
-	// 	if token != nil {
-	// 		fmt.Println(*token)
-	// 	}
-	// }
-
-	// return nil
 }

@@ -53,7 +53,7 @@ func readInputStream(input []string) stream {
 type TokenStream struct {
 	Next  func() *Token
 	Peek  func() *Token
-	Eof   func() bool
+	EOF   func() bool
 	Croak func(string) error
 }
 
@@ -79,9 +79,9 @@ func readTokenStream(input stream) TokenStream {
 		return current
 	}
 
-	Eof := func() bool {
+	EOF := func() bool {
 		return Peek() == nil
 	}
 
-	return TokenStream{Next, Peek, Eof, input.croak}
+	return TokenStream{Next, Peek, EOF, input.croak}
 }
