@@ -1,16 +1,21 @@
 package main
 
 import "fmt"
-import "testing"
 
+def PrintOut(p) {
+	fmt.Println("Some result")
+	fmt.Println(p)
+}
 
 def nameFunction(a, b) {
-	# this is just a comment
+	# define initial vars
 	var a float
 	var b uint64
 	var c double
 
-	testing.Compare(a, b)
+	locals.Compare(a, b)
+	locals.PrintOut(a)
+	locals.PrintOut(b)
 
 	a = 5 * 4 + 3
 	fmt.Println(a)
@@ -18,12 +23,12 @@ def nameFunction(a, b) {
 	c = 12 * 23 + 1234 - (12 * 23)
 	fmt.Println(b)
 
-	b = 41 + 1 / (12 * 23)
+	b = 40 * 1.13 / (12 * 23)
 
 	if b > 0 {
 		b += 2
 	}
 
 	c := 123.123
-	testing.Compare(a, c, b)
+	locals.Compare(a, c, b)
 }
