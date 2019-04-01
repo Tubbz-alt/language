@@ -5,10 +5,12 @@ import (
 	"os"
 
 	"github.com/enabokov/language/lexis"
+	"github.com/enabokov/language/syntax"
 )
 
 func main() {
 	filename := os.Args[1]
-	tokens := lexis.Analyze(filename)
-	fmt.Println(tokens)
+	os.Setenv("BNF_FILE_PATH", "/Users/eduardnabokov/Documents/work/cloudmade/bnf/bnf.yml")
+	tokenStream := lexis.Analyze(filename)
+	fmt.Println(syntax.Analyze(tokenStream))
 }
