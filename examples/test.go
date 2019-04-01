@@ -12,11 +12,13 @@ def nameFunction(a, b) {
 	a = 5 * 4 + 3 / (2 + 3)
 	fmt.Println(a)
 
-	b = 12 * 23 + 1234 - (12 * 23)
+	c = 12 * 23 + 1234 - (12 * 23)
 	fmt.Println(b)
 
+	b = x + 1
+
 	if b > 0 {
-		b++
+		b += 2
 	}
 
 	c := 123.123

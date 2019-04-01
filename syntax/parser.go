@@ -84,13 +84,22 @@ func parseArgs(input lexis.TokenStream, params *[]tokenVariable, requiredParam b
 	return nil
 }
 
-func parseBody(input lexis.TokenStream) (astNode, error) {
+func parseBody(input lexis.TokenStream, body *[]astNode) error {
 	token := input.Next()
 	if token.Class != lexis.ClassPunctuation || token.Value != `{` {
-		return nil, input.Croak(fmt.Sprintf("Got `%s`. Expected {", token.Value))
+		return input.Croak(fmt.Sprintf("Got `%s`. Expected {", token.Value))
 	}
 
-	return expression(input)
+	for input.Peek().Class != lexis.ClassPunctuation || input.Peek().Value != `}` {
+		astNode, err := expression(input)
+		if err != nil {
+			return input.Croak(err.Error())
+		}
+
+		*body = append(*body, astNode)
+	}
+
+	return nil
 }
 
 func parseFunction(input lexis.TokenStream) (tokenFunction, error) {
@@ -110,7 +119,9 @@ func parseFunction(input lexis.TokenStream) (tokenFunction, error) {
 		return tokenFunction{}, err
 	}
 
-	body, err := parseBody(input)
+	var body []astNode
+	parseBody(input, &body)
+
 	return tokenFunction{
 		Class:  `function`,
 		Name:   name,

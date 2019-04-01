@@ -47,7 +47,7 @@ type tokenFunction struct {
 	Class  string
 	Name   string
 	Params []tokenVariable
-	Body   astNode
+	Body   []astNode
 }
 
 type tokenProgram struct {
