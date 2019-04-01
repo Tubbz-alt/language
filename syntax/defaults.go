@@ -10,7 +10,7 @@ type tokenPrimitive struct {
 type tokenVariable struct {
 	Class string
 	Name  string
-	Value string
+	Type  string
 }
 
 type tokenPackage struct {
@@ -25,8 +25,8 @@ type tokenImport struct {
 
 type tokenCondition struct {
 	Class     string
-	Condition astNode
-	Do        astNode
+	Condition tokenBinaryExprOrAssign
+	Do        []astNode
 	Else      astNode
 }
 

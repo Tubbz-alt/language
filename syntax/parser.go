@@ -22,7 +22,7 @@ func parseParams(input lexis.TokenStream, params *[]tokenVariable, requiredParam
 			*params,
 			tokenVariable{
 				Class: t.Class,
-				Value: t.Value,
+				Name:  t.Value,
 			},
 		)
 		return parseParams(input, params, false)
@@ -60,7 +60,7 @@ func parseArgs(input lexis.TokenStream, params *[]tokenVariable, requiredParam b
 			*params,
 			tokenVariable{
 				Class: t.Class,
-				Value: t.Value,
+				Name:  t.Value,
 			},
 		)
 		return parseParams(input, params, false)
@@ -95,12 +95,13 @@ func parseBody(input lexis.TokenStream, body *[]astNode) error {
 	for input.Peek().Class != lexis.ClassPunctuation || input.Peek().Value != `}` {
 		astNode, err := expression(input)
 		if err != nil {
-			return input.Croak(err.Error())
+			return input.Croak("Oooops" + err.Error())
 		}
 
 		*body = append(*body, astNode)
 	}
 
+	input.Next()
 	return nil
 }
 
@@ -122,7 +123,7 @@ func parseFunction(input lexis.TokenStream) (tokenFunction, error) {
 	}
 
 	var body []astNode
-	parseBody(input, &body)
+	err = parseBody(input, &body)
 
 	return tokenFunction{
 		Class:  `function`,
@@ -143,7 +144,7 @@ func parseVariable(input lexis.TokenStream) (tokenVariable, error) {
 		return tokenVariable{}, input.Croak(fmt.Sprintf("Got `%s`. Expected type of variable", token.Value))
 	}
 
-	return tokenVariable{Class: `variable`, Name: name, Value: token.Value}, nil
+	return tokenVariable{Class: `variable`, Name: name, Type: token.Value}, nil
 }
 
 func parseImport(input lexis.TokenStream) (tokenImport, error) {
@@ -161,7 +162,7 @@ func parseCaller(input lexis.TokenStream, token *lexis.Token) (tokenCall, error)
 	err := parseArgs(input, &args, true)
 	return tokenCall{
 		Class: `caller`,
-		Func:  tokenVariable{Class: token.Class, Value: token.Value + nextToken.Value},
+		Func:  tokenVariable{Class: token.Class, Name: token.Value + nextToken.Value},
 		Args:  args,
 	}, err
 }
@@ -243,9 +244,22 @@ func parseAssignment(input lexis.TokenStream, token *lexis.Token) (tokenBinaryEx
 	}, err
 }
 
+func parseCondition(input lexis.TokenStream, token *lexis.Token) (tokenCondition, error) {
+	input.Next()
+
+	var body []astNode
+	cond, err := parseBinaryExpression(input, token)
+	err = parseBody(input, &body)
+
+	return tokenCondition{
+		Class:     `condition`,
+		Condition: cond,
+		Do:        body,
+	}, err
+}
+
 func expression(input lexis.TokenStream) (astNode, error) {
 	token := input.Next()
-
 	switch {
 	default:
 		return nil, input.Croak(fmt.Sprintf("Failed to parse `%s`", token.Value))
@@ -259,10 +273,10 @@ func expression(input lexis.TokenStream) (astNode, error) {
 		return parseVariable(input)
 	case isAssignment(input, token):
 		return parseAssignment(input, token)
-	// case isBinaryExpression(input):
-	// 	return tokenBinaryExprOrAssign{}, nil
-	// case isCondition(input):
-	// 	return tokenCondition{}, nil
+	case isBinaryExpression(input, token):
+		return parseBinaryExpression(input, token)
+	case isCondition(input, token):
+		return parseCondition(input, token)
 	case isCaller(input, token):
 		return parseCaller(input, token)
 	}
@@ -279,6 +293,7 @@ func program(input lexis.TokenStream) bool {
 			log.Printf("[ERROR] %v", err)
 			break
 		}
+
 		prog.Expression = append(prog.Expression, token)
 	}
 
