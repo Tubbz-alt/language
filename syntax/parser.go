@@ -1,238 +1,268 @@
 package syntax
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 
 	"github.com/enabokov/language/lexis"
 )
 
-type bigToken struct {
-	class    string
-	value    string
-	operator string
-	left     *bigToken
-	right    *bigToken
-	function *lexis.Token
-	args     []bigToken
-	cond     string
-	_else    string
-	prog     []*bigToken
-}
-
-func maybeBinary(input lexis.TokenStream, left *bigToken, prec int) *bigToken {
-	token := IsOperator(input, "")
-	fmt.Println(`SDASDAS`, token)
-	fmt.Println(input.Peek())
-	if token != nil {
-		currentPrec := Precedence[token.Value]
-		if currentPrec > prec {
-			input.Next()
-
-			class := "binary"
-			if token.Value == "=" || token.Value == ":=" {
-				class = "assign"
-			}
-
-			parsed := parseAtom(input)
-			fmt.Println("==============Patsed:", parsed)
-			right := maybeBinary(input, parsed, currentPrec)
-			return maybeBinary(
-				input,
-				&bigToken{
-					class:    class,
-					operator: token.Value,
-					left:     left,
-					right:    right,
-				},
-				prec,
-			)
-		}
-	}
-
-	return left
-}
-
-func delimited(input lexis.TokenStream, start string, stop string, separator string, parser func(input lexis.TokenStream) *bigToken) (tokens []bigToken) {
-	var first = true
-
-	SkipPunctuation(input, start)
-	for !input.Eof() {
-		if IsPunctuation(input, stop) != nil {
-			break
+func parseParams(input lexis.TokenStream, params *[]tokenVariable, requiredParam bool) error {
+	nextToken := input.Peek()
+	if nextToken.Class == lexis.ClassVariable {
+		if !requiredParam {
+			return input.Croak(fmt.Sprintf("Got `%s`. Expected `,` or `)`", input.Peek().Value))
 		}
 
-		if first {
-			first = false
-		} else {
-			SkipPunctuation(input, separator)
+		t := input.Next()
+
+		*params = append(
+			*params,
+			tokenVariable{
+				Class: t.Class,
+				Value: t.Value,
+			},
+		)
+		return parseParams(input, params, false)
+	}
+
+	if nextToken.Class == lexis.ClassPunctuation && nextToken.Value == "," {
+		if requiredParam {
+			return input.Croak(fmt.Sprintf("Got `%s`. Expected param", input.Peek().Value))
 		}
 
-		if IsPunctuation(input, stop) != nil {
-			break
-		}
-
-		parsed := parser(input)
-		tokens = append(tokens, *parsed)
-	}
-	SkipPunctuation(input, stop)
-	return tokens
-}
-
-func parseCall(input lexis.TokenStream, token *lexis.Token) *bigToken {
-	return &bigToken{
-		class:    "call",
-		function: token,
-		args:     delimited(input, "(", ")", ",", parseExpression),
-	}
-}
-
-func parseVarname(input lexis.TokenStream) *bigToken {
-	name := input.Next()
-	if name.Class != lexis.ClassVariable {
-		log.Fatalln(input.Croak(fmt.Sprintf("Expecting variable name, but not %s", name)))
-	}
-
-	return &bigToken{
-		class: "var",
-		value: name.Value,
-	}
-}
-
-func maybeCall(input lexis.TokenStream, token *lexis.Token) *bigToken {
-	if IsPunctuation(input, "(") != nil {
-		return parseCall(input, token)
-	}
-
-	return &bigToken{class: "call", function: token, args: nil}
-}
-
-func parseExpression(input lexis.TokenStream) *bigToken {
-	parsed := parseAtom(input)
-	token := maybeBinary(input, parsed, 0)
-	fmt.Println(token)
-
-	var class string
-	var value string
-
-	if token != nil {
-		class = token.class
-		value = token.operator
-	}
-
-	return maybeCall(input, &lexis.Token{Class: class, Value: value})
-}
-
-func parseBool(input lexis.TokenStream) *bigToken {
-	return &bigToken{
-		class: lexis.ClassBool,
-		value: fmt.Sprint(input.Next().Value == "true"),
-	}
-}
-
-func parseIf(input lexis.TokenStream) *bigToken {
-	SkipKeyword(input, "if")
-	cond := parseExpression(input)
-	if IsPunctuation(input, "{") == nil {
-		SkipKeyword(input, "then")
-	}
-
-	// then := parseExpression(input)
-
-	var ret *bigToken
-	if IsKeyword(input, "else") != nil {
 		input.Next()
-		ret = &bigToken{
-			class: "if",
-			cond:  cond.value,
-			_else: parseExpression(input).value,
-		}
+		return parseParams(input, params, true)
 	}
 
-	return ret
-}
-
-func parseDefer(input lexis.TokenStream) *bigToken {
-	SkipKeyword(input, "defer")
-	variable := parseExpression(input)
-	input.Next()
-
-	delimited(input, "(", ")", ",", parseVarname)
-	parseExpression(input)
-
-	return &bigToken{
-		class: "defer",
-		value: variable.value,
+	if requiredParam {
+		return input.Croak(fmt.Sprintf("Got `%s`. Expected param", input.Peek().Value))
 	}
-}
 
-func parseAtom(input lexis.TokenStream) *bigToken {
-	if IsPunctuation(input, "(") != nil {
+	if input.Peek().Class == lexis.ClassPunctuation && input.Peek().Value == `)` {
 		input.Next()
-		exp := parseExpression(input)
-		SkipPunctuation(input, ")")
-		return exp
-	}
-
-	if IsPunctuation(input, "{") != nil {
-		return parseProgram(input)
-	}
-
-	if IsKeyword(input, "if") != nil {
-		return parseIf(input)
-	}
-
-	if IsKeyword(input, "true") != nil || IsKeyword(input, "false") != nil {
-		return parseBool(input)
-	}
-
-	if IsKeyword(input, "defer") != nil {
-		return parseDefer(input)
-	}
-
-	// if IsKeyword(input, "lambda") != nil {
-	// input.Next()
-	// return parseLambda()
-	// }
-
-	token := input.Next()
-	if token.Class == lexis.ClassVariable || token.Class == lexis.ClassNumber || token.Class == lexis.ClassString {
-		return &bigToken{class: "token", function: token, args: nil}
-	}
-
-	Unexpected(input)
-
-	return maybeCall(input, token)
-}
-
-func parseProgram(input lexis.TokenStream) *bigToken {
-	program := delimited(input, "{", "}", ":", parseExpression)
-	if len(program) == 0 {
-		return &bigToken{class: lexis.ClassBool, value: "false"}
-	}
-
-	out, err := json.Marshal(program[0])
-	if err != nil {
-		panic(err)
-	}
-
-	if len(program) == 1 {
-		return &bigToken{class: lexis.ClassProgram, value: string(out)}
 	}
 
 	return nil
 }
 
-func ParseTopLevel(input lexis.TokenStream) *bigToken {
-	var prog []*bigToken
-	for !input.Eof() {
-		prog = append(prog, parseExpression(input))
-		if !input.Eof() {
-			fmt.Println("Next line, ", prog)
-			// SkipPunctuation(input, ";")
+func parseArgs(input lexis.TokenStream, params *[]tokenVariable, requiredParam bool) error {
+	nextToken := input.Peek()
+	if nextToken.Class == lexis.ClassVariable {
+		if !requiredParam {
+			return input.Croak(fmt.Sprintf("Got `%s`. Expected `,` or `)`", input.Peek().Value))
+		}
+
+		t := input.Next()
+		*params = append(
+			*params,
+			tokenVariable{
+				Class: t.Class,
+				Value: t.Value,
+			},
+		)
+		return parseParams(input, params, false)
+	}
+
+	if nextToken.Class == lexis.ClassPunctuation && nextToken.Value == "," {
+		if requiredParam {
+			return input.Croak(fmt.Sprintf("Got `%s`. Expected param", input.Peek().Value))
+		}
+
+		input.Next()
+		return parseParams(input, params, true)
+	}
+
+	if requiredParam {
+		return input.Croak(fmt.Sprintf("Got `%s`. Expected param", input.Peek().Value))
+	}
+
+	if input.Peek().Class == lexis.ClassPunctuation && input.Peek().Value == `)` {
+		input.Next()
+	}
+
+	return nil
+}
+
+func parseBody(input lexis.TokenStream) (astNode, error) {
+	token := input.Next()
+	if token.Class != lexis.ClassPunctuation || token.Value != `{` {
+		return nil, input.Croak(fmt.Sprintf("Got `%s`. Expected {", token.Value))
+	}
+
+	return expression(input)
+}
+
+func parseFunction(input lexis.TokenStream) (tokenFunction, error) {
+	// get function name
+	name := input.Next().Value
+
+	var (
+		params []tokenVariable
+		err    error
+	)
+
+	if token := input.Next(); token.Class != lexis.ClassPunctuation || token.Value != `(` {
+		return tokenFunction{}, input.Croak(fmt.Sprintf("Got `%s`. Expected `(`", token.Value))
+	}
+
+	if err = parseParams(input, &params, true); err != nil {
+		return tokenFunction{}, err
+	}
+
+	body, err := parseBody(input)
+	return tokenFunction{
+		Class:  `function`,
+		Name:   name,
+		Params: params,
+		Body:   body,
+	}, err
+}
+
+func parsePackage(input lexis.TokenStream) (tokenPackage, error) {
+	return tokenPackage{Class: `package`, Value: input.Next().Value}, nil
+}
+
+func parseVariable(input lexis.TokenStream) (tokenVariable, error) {
+	name := input.Next().Value
+	token := input.Next()
+	if token.Class != lexis.ClassType {
+		return tokenVariable{}, input.Croak(fmt.Sprintf("Got `%s`. Expected type of variable", token.Value))
+	}
+
+	return tokenVariable{Class: `variable`, Name: name, Value: token.Value}, nil
+}
+
+func parseImport(input lexis.TokenStream) (tokenImport, error) {
+	return tokenImport{Class: `import`, Value: input.Next().Value}, nil
+}
+
+func parseCaller(input lexis.TokenStream, token *lexis.Token) (tokenCall, error) {
+	nextToken := input.Next()
+	if input.Peek().Class == lexis.ClassPunctuation && input.Peek().Value == "(" {
+		input.Next()
+	}
+
+	var args []tokenVariable
+
+	err := parseArgs(input, &args, true)
+	return tokenCall{
+		Class: `caller`,
+		Func:  tokenVariable{Class: token.Class, Value: token.Value + nextToken.Value},
+		Args:  args,
+	}, err
+}
+
+func _parse(operators []string, numbers []string, result *tokenBinaryExprOrAssign) error {
+	var op string
+	var num string
+
+	if len(operators) == 0 && len(numbers) == 0 {
+		return nil
+	}
+
+	if len(operators) > 0 {
+		op, operators = operators[0], operators[1:]
+		result.Operator = op
+	}
+
+	if len(numbers) > 0 {
+		num, numbers = numbers[0], numbers[1:]
+		result.Left = tokenPrimitive{
+			Class: `number`,
+			Value: num,
 		}
 	}
 
-	return &bigToken{class: "prog", prog: prog}
+	result.Class = `binary`
+	result.Right = &tokenBinaryExprOrAssign{}
+	return _parse(operators, numbers, result.Right)
+}
+
+func parseBinaryExpression(input lexis.TokenStream, token *lexis.Token) (tokenBinaryExprOrAssign, error) {
+	var numbers []string
+	var operators []string
+
+	for {
+		token := input.Peek()
+		if token.Class == lexis.ClassOperator {
+			operators = append(operators, token.Value)
+			input.Next()
+			continue
+		}
+
+		if token.Class == lexis.ClassPunctuation && (token.Value == `(` || token.Value == `)`) {
+			operators = append(operators, token.Value)
+			input.Next()
+			continue
+		}
+
+		if token.Class == lexis.ClassNumber {
+			numbers = append(numbers, token.Value)
+			input.Next()
+			continue
+		}
+
+		break
+	}
+
+	var res = tokenBinaryExprOrAssign{Class: `assignment`}
+	err := _parse(operators, numbers, &res)
+	return res, err
+}
+
+func parseAssignment(input lexis.TokenStream, token *lexis.Token) (tokenBinaryExprOrAssign, error) {
+	nextToken := input.Next()
+	number := input.Peek()
+
+	res, err := parseBinaryExpression(input, number)
+	return tokenBinaryExprOrAssign{
+		Class:    `assignment`,
+		Operator: nextToken.Value,
+		Left:     tokenPrimitive{Class: `number`, Value: number.Value},
+		Right:    &res,
+	}, err
+}
+
+func expression(input lexis.TokenStream) (astNode, error) {
+	token := input.Next()
+
+	switch {
+	default:
+		return nil, input.Croak(fmt.Sprintf("Failed to parse `%s`", token.Value))
+	case isPackage(input, token):
+		return parsePackage(input)
+	case isImport(input, token):
+		return parseImport(input)
+	case isFunction(input, token):
+		return parseFunction(input)
+	case isVariable(input, token):
+		return parseVariable(input)
+	case isAssignment(input, token):
+		return parseAssignment(input, token)
+	// case isBinaryExpression(input):
+	// 	return tokenBinaryExprOrAssign{}, nil
+	// case isCondition(input):
+	// 	return tokenCondition{}, nil
+	case isCaller(input, token):
+		return parseCaller(input, token)
+	}
+}
+
+func program(input lexis.TokenStream) bool {
+	var prog = tokenProgram{
+		Class: "program",
+	}
+
+	for !input.EOF() {
+		token, err := expression(input)
+		if err != nil {
+			log.Printf("[ERROR] %v", err)
+			break
+		}
+		prog.Expression = append(prog.Expression, token)
+	}
+
+	fmt.Printf("%v\n", prog.Expression)
+	return true
 }
