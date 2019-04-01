@@ -1,6 +1,8 @@
 package syntax
 
 import (
+	"fmt"
+
 	"github.com/enabokov/language/lexis"
 )
 
@@ -15,6 +17,7 @@ var priorities = map[string]int{
 
 func isPackage(input lexis.TokenStream, token *lexis.Token) bool {
 	if token.Class == lexis.ClassKeyword && token.Value == "package" {
+		fmt.Println("check if package")
 		nextToken := input.Peek()
 		if nextToken.Class == lexis.ClassVariable {
 			return true
@@ -26,6 +29,7 @@ func isPackage(input lexis.TokenStream, token *lexis.Token) bool {
 
 func isImport(input lexis.TokenStream, token *lexis.Token) bool {
 	if token.Class == lexis.ClassKeyword && token.Value == "import" {
+		fmt.Println("check if import --", token.Value)
 		nextToken := input.Peek()
 		if nextToken.Class == lexis.ClassString {
 			return true
@@ -37,6 +41,7 @@ func isImport(input lexis.TokenStream, token *lexis.Token) bool {
 
 func isFunction(input lexis.TokenStream, token *lexis.Token) bool {
 	if token.Class == lexis.ClassKeyword && token.Value == "def" {
+		fmt.Println("check if function --", token.Value)
 		nextToken := input.Peek()
 		if nextToken.Class == lexis.ClassVariable {
 			return true
@@ -48,6 +53,7 @@ func isFunction(input lexis.TokenStream, token *lexis.Token) bool {
 
 func isVariable(input lexis.TokenStream, token *lexis.Token) bool {
 	if token.Class == lexis.ClassKeyword && token.Value == "var" {
+		fmt.Println("check if variable --", token.Value)
 		nextToken := input.Peek()
 		if nextToken.Class == lexis.ClassVariable {
 			return true
@@ -58,7 +64,8 @@ func isVariable(input lexis.TokenStream, token *lexis.Token) bool {
 }
 
 func isCaller(input lexis.TokenStream, token *lexis.Token) bool {
-	if token.Class == lexis.ClassVariable {
+	if token.Class == lexis.ClassVariable && input.Peek().Class == lexis.ClassCall {
+		fmt.Println("check if caller --", token.Value)
 		nextToken := input.Peek()
 		if nextToken.Class == lexis.ClassCall {
 			return true
@@ -69,11 +76,9 @@ func isCaller(input lexis.TokenStream, token *lexis.Token) bool {
 }
 
 func isAssignment(input lexis.TokenStream, token *lexis.Token) bool {
-	if token.Class == lexis.ClassVariable {
-		nextToken := input.Peek()
-		if nextToken.Class == lexis.ClassOperator && nextToken.Value == `=` {
-			return true
-		}
+	if token.Class == lexis.ClassVariable && input.Peek().Class == lexis.ClassOperator && input.Peek().Value == `=` {
+		fmt.Println("check if assignment --", token.Value)
+		return true
 	}
 
 	return false

@@ -3,6 +3,7 @@ package syntax
 import (
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/enabokov/language/lexis"
 )
@@ -227,10 +228,15 @@ func parseAssignment(input lexis.TokenStream, token *lexis.Token) (tokenBinaryEx
 	number := input.Peek()
 
 	res, err := parseBinaryExpression(input, number)
+
+	if _, err := strconv.Atoi(token.Value); err == nil {
+		return tokenBinaryExprOrAssign{}, input.Croak(fmt.Sprintf("Got %s. Cannot assign to number", token.Value))
+	}
+
 	return tokenBinaryExprOrAssign{
 		Class:    `assignment`,
 		Operator: nextToken.Value,
-		Left:     tokenPrimitive{Class: `number`, Value: number.Value},
+		Left:     tokenPrimitive{Class: `variable`, Value: token.Value},
 		Right:    &res,
 	}, err
 }
@@ -274,6 +280,6 @@ func program(input lexis.TokenStream) bool {
 		prog.Expression = append(prog.Expression, token)
 	}
 
-	fmt.Printf("%v\n", prog.Expression)
+	fmt.Printf("%+v\n", prog.Expression)
 	return true
 }
