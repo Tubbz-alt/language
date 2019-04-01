@@ -50,7 +50,7 @@ type tokenFunction struct {
 	Body   []astNode
 }
 
-type tokenProgram struct {
+type TokenProgram struct {
 	Class      string
 	Expression []astNode
 }

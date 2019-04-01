@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/enabokov/language/lexis"
-	"github.com/kr/pretty"
 )
 
 func parseParams(input lexis.TokenStream, params *[]tokenVariable, requiredParam bool) error {
@@ -50,7 +49,7 @@ func parseParams(input lexis.TokenStream, params *[]tokenVariable, requiredParam
 
 func parseArgs(input lexis.TokenStream, params *[]tokenVariable, requiredParam bool) error {
 	nextToken := input.Peek()
-	if nextToken.Class == lexis.ClassVariable {
+	if nextToken.Class == lexis.ClassVariable || nextToken.Class == lexis.ClassString {
 		if !requiredParam {
 			return input.Croak(fmt.Sprintf("Got `%s`. Expected `,` or `)`", input.Peek().Value))
 		}
@@ -95,7 +94,7 @@ func parseBody(input lexis.TokenStream, body *[]astNode) error {
 	for input.Peek().Class != lexis.ClassPunctuation || input.Peek().Value != `}` {
 		astNode, err := expression(input)
 		if err != nil {
-			return input.Croak("Oooops" + err.Error())
+			return err
 		}
 
 		*body = append(*body, astNode)
@@ -282,11 +281,7 @@ func expression(input lexis.TokenStream) (astNode, error) {
 	}
 }
 
-func program(input lexis.TokenStream) bool {
-	var prog = tokenProgram{
-		Class: "program",
-	}
-
+func program(input lexis.TokenStream) (ast TokenProgram) {
 	for !input.EOF() {
 		token, err := expression(input)
 		if err != nil {
@@ -294,9 +289,9 @@ func program(input lexis.TokenStream) bool {
 			break
 		}
 
-		prog.Expression = append(prog.Expression, token)
+		ast.Expression = append(ast.Expression, token)
 	}
 
-	fmt.Printf("%# v", pretty.Formatter(prog))
-	return true
+	ast.Class = `program`
+	return ast
 }
