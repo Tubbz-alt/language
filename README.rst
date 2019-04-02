@@ -40,7 +40,7 @@ Every language has own implementation of YAML marshalling/unmarshalling, that en
   - **alternatives** - same as for previous one
 
 - **arrayLiterals** - structure of Array literal
-   
+
   - **alternatives** - same as for previous one
 
 - **structTypes** - structure of Struct literal
@@ -50,7 +50,8 @@ Every language has own implementation of YAML marshalling/unmarshalling, that en
 - **functionTypes** - structure of Function literal
 
   - **alternatives** - same as for previous one
-      
+
+- **bnf.go** - parse grammar rules and applies for parsing
 
 **Lexis analyzer**
 ==================
@@ -79,38 +80,38 @@ Every language has own implementation of YAML marshalling/unmarshalling, that en
 **Syntax analyzer**
 ===================
 *Responsible for grouping lexical tokens into Abstract Syntax Tree (AST)*
-   
+
 Source code
 ^^^^^^^^^^^
 
 .. code-block::
 
-    package main
+   package main
 
-    func main(a, b) {}
+   func main(a, b) {}
 
 Abstract syntax tree
 ^^^^^^^^^^^^^^^^^^^^
 
 .. code-block::
 
-    syntax.TokenProgram{
+   syntax.TokenProgram{
       Class:      "program",
       Expression: {
-          syntax.TokenPackage{Class:"package", Value:"main"},
-          syntax.TokenFunction{
-              Class:  "function",
-              Name:   "main",
-              Params: {
-                  {Class:"variable", Name:"a", Type:""},
-                  {Class:"variable", Name:"b", Type:""},
-              },
-              Body: nil,
-          },
+         syntax.TokenPackage{Class:"package", Value:"main"},
+         syntax.TokenFunction{
+            Class:  "function",
+            Name:   "main",
+            Params: {
+               {Class:"variable", Name:"a", Type:""},
+               {Class:"variable", Name:"b", Type:""},
+            },
+            Body: nil,
+         },
       },
-    }
-  
-  2019/04/02 04:11:52 OK
+   }
+
+   2019/04/02 04:11:52 OK
 
 - **check.go** - check what structure group of token describes (e.g contional operator, assignment, function) 
 
@@ -129,24 +130,60 @@ Source code
 
 .. code-block::
 
-    package test
+   package test
 
-    import "fmt"
+   import "fmt"
 
-    def do(a, b) {
-        var a int
-        var c int
+   def do(a, b) {
+      var a int
+      var c int
 
-        fmt.Println(a, b, c)    
-    }
+      fmt.Println(a, b, c)
+   }
 
 Validation
 ^^^^^^^^^^
 
 .. code-block::
-  
-    2019/04/02 04:30:23 Variable `a` is already defined in `do`
-    
+
+   2019/04/02 04:30:23 Variable `a` is already defined in `do`
+
 - **walk.go** - traverse Abstract syntax tree and looks for ambigious situations. If found -> trigger error notifier
 
 - **semantics.go** - entrypoint
+
+Main
+====
+*Start entrypoint for compiling source code*
+
+.. code-block::
+
+   go build compile.go
+   ./compile examples/complex.ena
+
+- **compile.go** - accepts path to source code `*.ena` for further parsing
+
+Dependencies
+============
+*This project depends on some packages*
+
+go.mod
+^^^^^^
+
+.. code-block::
+
+   // list deps packages
+   require (
+      github.com/kr/pretty v0.1.0
+      gopkg.in/yaml.v2 v2.2.2
+   )
+
+Examples
+========
+*Defined 3 examples of source code*
+
+- **simple.ena**
+
+- **duplicated_vars.ena**
+
+- **complex.ena**
