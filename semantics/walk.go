@@ -20,16 +20,16 @@ func scanCall(call syntax.TokenCall, localVars []string, funcName string, funcs 
 	// check if function defined
 	if mainImport == `locals` {
 		if _, ok := (*funcs)[fn]; !ok {
-			return fmt.Errorf("No such method %s from %s", fn, mainImport)
+			return fmt.Errorf("No such method %s", fn)
 		}
 
 		if len(call.Args) != len((*funcs)[fn]) {
-			return fmt.Errorf("Wrong call %s", call.Func.Name)
+			return fmt.Errorf("Wrong call %s. Too many arguments: expect %v - got %v", call.Func.Name, (*funcs)[fn], call.Args)
 		}
 	} else {
 		// check if there was import for this function
 		if _, ok := (*imports)[mainImport]; !ok {
-			return fmt.Errorf("No such import %s", mainImport)
+			return fmt.Errorf("No such import %s. Failed on %s", mainImport, call.Func.Name)
 		}
 	}
 
@@ -139,7 +139,7 @@ func scan(ast syntax.TokenProgram) (err error) {
 		if ok {
 			err = scanImport(astImport, &functions, &imports)
 			if err != nil {
-				log.Fatalln(err)
+				return err
 			}
 			continue
 		}
@@ -148,7 +148,7 @@ func scan(ast syntax.TokenProgram) (err error) {
 		if ok {
 			err = scanPackage(astPackage, &packages)
 			if err != nil {
-				log.Fatalln(err)
+				return err
 			}
 			continue
 		}

@@ -5,7 +5,6 @@ import (
 )
 
 func Analyze(ast syntax.TokenProgram) error {
-	scan(ast)
 	// fmt.Printf("%# v", pretty.Formatter(ast))
-	return nil
+	return scan(ast)
 }
