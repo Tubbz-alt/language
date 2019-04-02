@@ -2,15 +2,23 @@ package main
 
 import "fmt"
 
+def Compare(a, b) {
+	if a > 0 {
+		b += 3
+	}
+
+	if a <= -15 {
+		a -= 2
+	}
+}
+
 def PrintOut(p) {
 	fmt.Println("Some result")
 	fmt.Println(p)
 }
 
-def nameFunction(a, b) {
+def main(a, b) {
 	# define initial vars
-	var a float
-	var b uint64
 	var c double
 
 	locals.Compare(a, b)
@@ -30,5 +38,5 @@ def nameFunction(a, b) {
 	}
 
 	c := 123.123
-	locals.Compare(a, c, b)
+	locals.Compare(a, c)
 }
