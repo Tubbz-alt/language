@@ -2,6 +2,8 @@
 Language compiler
 =================
 
+Link to repo: https://github.com/enabokov/language.git
+
 *Written in purpose of investigating how any language works under the hood*
 
 **Grammar**
